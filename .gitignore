@@ -1,0 +1,47 @@
+# --- Sistema / Editor ---
+.DS_Store
+Thumbs.db
+*.log
+logs/
+.vscode/
+.idea/
+
+# --- Arquivos de ambiente ---
+.env
+.env.*
+*.local
+
+# --- Go (builds e artefatos) ---
+bin/
+build/
+dist/
+server
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.*
+profile.out
+# Banco local antigo (SQLite), manter fora do repo
+*.db
+
+# --- Docker / Compose (bind volumes locais opcionais) ---
+pgdata/
+
+# --- Frontend (Next.js / Node) ---
+web/node_modules/
+web/.next/
+web/out/
+web/.turbo/
+web/.vercel/
+web/npm-debug.log*
+web/yarn-error.log*
+web/.env
+web/.env.*
+web/.DS_Store
+
+# --- Caches gerais ---
+.cache/
+web/.cache/
