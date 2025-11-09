@@ -1,117 +1,116 @@
-// Formulário de criação de tarefa com validação mínima.
-// Envia título, descrição, status e prazo ao backend e retorna o item criado via 'onCreated'.
+import React, { useState, FormEvent } from 'react';
 
-import { useState, type FormEvent } from 'react';
-
-type Props = {
+export default function CreateTaskForm({
+  apiUrl,
+  token,
+  onCreated,
+  onNotify,
+}: {
   apiUrl: string;
   token: string | null;
-  onCreated: (task: any) => void;
-  onNotify?: (type: 'success' | 'error' | 'info', message: string) => void;
-};
-
-export default function CreateTaskForm({ apiUrl, token, onCreated, onNotify }: Props) {
-  // Estados controlados dos campos de formulário.
+  onCreated: () => void;
+  onNotify?: (message: string, type?: 'success' | 'error') => void;
+}) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('todo');
   const [dueDate, setDueDate] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  // Validação simples antes do envio.
-  const validate = () => title.trim().length >= 3;
-
-  // Envio ao backend com feedback visual e limpeza do formulário.
-  const submit = async (e: FormEvent) => {
+  async function handleCreate(e: FormEvent) {
     e.preventDefault();
-    if (!validate()) {
-      onNotify?.('error', 'Título deve ter pelo menos 3 caracteres.');
+    if (!title.trim()) {
+      onNotify?.('Título é obrigatório', 'error');
       return;
     }
     try {
-      setLoading(true);
+      const body: any = {
+        title,
+        description,
+        status,
+      };
+      if (dueDate) {
+        // Envia em ISO, backend aceita `dueDate` como RFC/ISO
+        body.dueDate = new Date(dueDate).toISOString();
+      }
       const res = await fetch(`${apiUrl}/api/tasks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({
-          title,
-          description,
-          status,
-          dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-        }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
-        const msg = await safeErrorMessage(res);
-        throw new Error(msg || `Erro ao criar tarefa (${res.status})`);
+        onNotify?.('Falha ao criar tarefa', 'error');
+        return;
       }
-      const created = await res.json();
-      onCreated(created);
-      onNotify?.('success', 'Tarefa criada com sucesso.');
+      onNotify?.('Tarefa criada com sucesso', 'success');
+      // limpa formulário
       setTitle('');
       setDescription('');
       setStatus('todo');
       setDueDate('');
-    } catch (err: any) {
-      onNotify?.('error', err?.message || 'Falha ao criar tarefa.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Helper para extrair mensagem de erro de respostas JSON/text.
-  const safeErrorMessage = async (res: Response) => {
-    try {
-      const data = await res.json();
-      return data?.error || data?.message || '';
+      // informa o pai para recarregar
+      onCreated();
     } catch {
-      try {
-        return await res.text();
-      } catch {
-        return '';
-      }
+      onNotify?.('Erro de rede ao criar tarefa', 'error');
     }
-  };
+  }
 
-  // UI do formulário com Tailwind e estados controlados.
   return (
-    <form onSubmit={submit} className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Título"
-        className="rounded border px-3 py-2"
-      />
-      <input
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Descrição"
-        className="rounded border px-3 py-2"
-      />
-      <select
-        value={status}
-        onChange={(e) => setStatus(e.target.value)}
-        className="rounded border px-3 py-2"
-      >
-        <option value="todo">Todo</option>
-        <option value="in_progress">Em progresso</option>
-        <option value="done">Concluído</option>
-      </select>
-      <input
-        type="date"
-        value={dueDate}
-        onChange={(e) => setDueDate(e.target.value)}
-        className="rounded border px-3 py-2"
-      />
-      <button
-        type="submit"
-        disabled={loading}
-        className="rounded bg-green-600 px-3 py-2 text-white hover:bg-green-700 disabled:opacity-50"
-      >
-        {loading ? 'Criando...' : 'Criar'}
-      </button>
+    <form onSubmit={handleCreate} className="rounded-lg border border-slate-200 bg-white shadow-sm p-4 flex flex-col gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Título</label>
+          <input
+            className="w-full rounded-md border-slate-300 focus:ring-green-500 focus:border-green-500 bg-gray-50"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+          <select
+            className="w-full rounded-md border-slate-300 focus:ring-green-500 focus:border-green-500 bg-gray-50"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="todo">Todo</option>
+            <option value="doing">Doing</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Descrição</label>
+        <textarea
+          rows={4}
+          className="w-full rounded-md border-slate-300 focus:ring-green-500 focus:border-green-500 bg-gray-50"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Prazo</label>
+          <input
+            type="date"
+            className="w-full rounded-md border-slate-300 focus:ring-green-500 focus:border-green-500 bg-gray-50"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+          />
+        </div>
+        <div className="md:col-span-2 flex justify-end">
+          <button
+            type="submit"
+            className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
+          >
+            Criar
+          </button>
+        </div>
+      </div>
     </form>
   );
 }

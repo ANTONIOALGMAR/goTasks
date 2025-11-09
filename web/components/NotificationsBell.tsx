@@ -48,8 +48,8 @@ export default function NotificationsBell({ apiUrl, token }: Props) {
   };
 
   useEffect(() => {
-    fetchNotifications(true);
-    const id = setInterval(() => fetchNotifications(true), 30000);
+    fetchNotifications();
+    const id = setInterval(() => fetchNotifications(), 30000);
     return () => clearInterval(id);
   }, [token]);
 
