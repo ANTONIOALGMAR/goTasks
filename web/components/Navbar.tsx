@@ -1,13 +1,12 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import NotificationsBell from './NotificationsBell';
 
 export default function Navbar() {
   const router = useRouter();
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    router.push('/login');
-  };
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   return (
     <nav className="bg-gray-900 text-white">
@@ -21,8 +20,12 @@ export default function Navbar() {
           </Link>
         </div>
         <div className="flex items-center gap-3">
+          <NotificationsBell apiUrl={apiUrl} token={token} />
           <button
-            onClick={logout}
+            onClick={() => {
+              localStorage.removeItem('token');
+              router.push('/login');
+            }}
             className="rounded bg-red-600 hover:bg-red-700 px-3 py-1 text-sm"
           >
             Logout

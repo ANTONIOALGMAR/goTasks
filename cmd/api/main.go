@@ -13,6 +13,7 @@ import (
 	"goTasks/internal/db"
 	"goTasks/internal/handlers"
 	"goTasks/internal/ws"
+	"goTasks/internal/notify"
 )
 
 func main() {
@@ -51,26 +52,36 @@ func main() {
 	authHandler := handlers.NewAuthHandler(database, cfg.JWTSecret)
 	taskHandler := handlers.NewTaskHandler(database, hub)
 	commentHandler := handlers.NewCommentHandler(database, hub)
+	notificationsHandler := handlers.NewNotificationsHandler(database)
+
+	// Scheduler de notificações
+	scheduler := notify.NewScheduler(database, hub)
+	scheduler.Start()
 
 	api := app.Group("/api")
+	// Auth
 	api.Post("/auth/register", authHandler.Register)
 	api.Post("/auth/login", authHandler.Login)
 	api.Post("/auth/refresh", authHandler.Refresh)
 
-	apiAuth := api.Group("", auth.RequireJWT(cfg.JWTSecret))
-
 	// Tasks
-	apiAuth.Get("/tasks", taskHandler.List)
-	apiAuth.Post("/tasks", taskHandler.Create)
-	apiAuth.Get("/tasks/:id", taskHandler.GetByID)
-	apiAuth.Patch("/tasks/:id", taskHandler.Update)
-	apiAuth.Delete("/tasks/:id", taskHandler.Delete)
+	api.Get("/tasks", auth.RequireJWT(cfg.JWTSecret), taskHandler.List)
+	api.Post("/tasks", auth.RequireJWT(cfg.JWTSecret), taskHandler.Create)
+	api.Get("/tasks/:id", auth.RequireJWT(cfg.JWTSecret), taskHandler.GetByID)
+	api.Patch("/tasks/:id", auth.RequireJWT(cfg.JWTSecret), taskHandler.Update)
+	api.Delete("/tasks/:id", auth.RequireJWT(cfg.JWTSecret), taskHandler.Delete)
 
 	// Comments
-	apiAuth.Get("/tasks/:id/comments", commentHandler.ListByTask)
-	apiAuth.Post("/tasks/:id/comments", commentHandler.CreateOnTask)
+	api.Get("/tasks/:id/comments", auth.RequireJWT(cfg.JWTSecret), commentHandler.ListByTask)
+	api.Post("/tasks/:id/comments", auth.RequireJWT(cfg.JWTSecret), commentHandler.CreateOnTask)
 
+	// Notifications
+	api.Get("/notifications", auth.RequireJWT(cfg.JWTSecret), notificationsHandler.List)
+	api.Patch("/notifications/:id/read", auth.RequireJWT(cfg.JWTSecret), notificationsHandler.MarkRead)
+
+	// Swagger, WS etc.
 	log.Printf("API ouvindo em http://localhost:%s", cfg.Port)
+	// Start
 	if err := app.Listen(":" + cfg.Port); err != nil {
 		log.Fatal(err)
 	}

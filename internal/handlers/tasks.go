@@ -124,6 +124,11 @@ func (h *TaskHandler) GetByID(c *fiber.Ctx) error {
 	if err := h.db.Preload("Owner").First(&task, "id = ?", id).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "task not found"})
 	}
+	userID := c.Locals("userID").(uint)
+	userRole, _ := c.Locals("userRole").(string)
+	if userRole != "admin" && task.OwnerID != userID {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "task not found"})
+	}
 	return c.JSON(task)
 }
 
@@ -132,6 +137,11 @@ func (h *TaskHandler) Update(c *fiber.Ctx) error {
 	id := c.Params("id")
 	if err := h.db.First(&task, "id = ?", id).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "task not found"})
+	}
+	userID := c.Locals("userID").(uint)
+	userRole, _ := c.Locals("userRole").(string)
+	if userRole != "admin" && task.OwnerID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "not allowed"})
 	}
 	var body struct {
 		Title       *string     `json:"title"`
@@ -163,6 +173,15 @@ func (h *TaskHandler) Update(c *fiber.Ctx) error {
 
 func (h *TaskHandler) Delete(c *fiber.Ctx) error {
 	id := c.Params("id")
+	var task models.Task
+	if err := h.db.First(&task, "id = ?", id).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "task not found"})
+	}
+	userID := c.Locals("userID").(uint)
+	userRole, _ := c.Locals("userRole").(string)
+	if userRole != "admin" && task.OwnerID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "not allowed"})
+	}
 	if err := h.db.Delete(&models.Task{}, "id = ?", id).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "internal error"})
 	}

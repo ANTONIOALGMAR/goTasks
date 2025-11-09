@@ -12,5 +12,10 @@ func Connect(dsn string) (*gorm.DB, error) {
 }
 
 func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(&models.User{}, &models.Task{}, &models.Comment{})
+	return db.AutoMigrate(
+		&models.User{},
+		&models.Task{},
+		&models.Comment{},
+		&models.Notification{}, // novo: tabela de notificações
+	)
 }
