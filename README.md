@@ -1,62 +1,68 @@
-# goTasks — API de Gestão de Tarefas
+# goTasks - Full-Stack Task Management System
 
-Sistema simples de gestão de tarefas com API REST em Go. Persistência em SQLite, logging e CORS habilitado para facilitar o uso em aplicações web.
-
-- Linguagem: Go 1.22+
-- Armazenamento: SQLite (`goTasks.db` por padrão)
-- Servidor HTTP: `net/http` com `http.Server`
-- Recursos: CRUD de tarefas, paginação, CORS, health-check, logging
+**goTasks** is a complete task management application featuring a Go (Fiber) backend, a React (Next.js) frontend, and PostgreSQL for data storage, all containerized with Docker for easy setup and deployment.
 
 ---
 
-## Visão Geral
+## Tech Stack
 
-A API expõe endpoints para criar, listar, consultar, atualizar e remover tarefas. As tarefas são armazenadas em um banco SQLite e acessadas de forma segura para concorrência.
-
-- Endpoints principais:
-  - `GET/POST /tasks`
-  - `GET/PATCH/PUT/DELETE /tasks/{id}`
-- Health-check:
-  - `GET /health` → retorna `ok`
+- **Backend:** [Go](https://golang.org/) with [Fiber](https://gofiber.io/)
+- **Frontend:** [Next.js](https://nextjs.org/) (React Framework) with [TypeScript](https://www.typescriptlang.org/) & [Tailwind CSS](https://tailwindcss.com/)
+- **Database:** [PostgreSQL](https://www.postgresql.org/)
+- **Containerization:** [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
+- **Real-time Updates:** WebSockets
 
 ---
 
-## Recursos
+## Getting Started
 
-- CRUD de tarefas com campos: `title`, `description`, `done`, timestamps.
-- Paginação em `GET /tasks` com `limit` e `offset`.
-- CORS habilitado (`*`) para uso via browser.
-- Logging de requisições com tempo de execução.
-- Configuração por variáveis de ambiente (`PORT`, `DATABASE_PATH`).
+This project is fully containerized, so the only prerequisites are Docker and Docker Compose.
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+### Running the Application
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/ANTONIOALGMAR/goTasks.git
+    cd goTasks
+    ```
+
+2.  **Build and run the services:**
+    Use Docker Compose to build the images and start the `api`, `web`, and `db` services.
+    ```bash
+    docker-compose up --build
+    ```
+    The services will start, and the application will be accessible shortly. The initial build may take a few minutes.
+
+### Troubleshooting
+
+-   **`address already in use` Error:** If you see an error related to ports `8080` or `3001` being in use, it means another process on your machine is using them. Find and stop that process, or change the port mappings in the `docker-compose.yml` file.
+
+-   **`failed to execute bake: read |0: file already closed` Error:** This is a known issue with some versions of Docker's BuildKit. If you encounter this, you can disable BuildKit for the build command:
+    ```bash
+    DOCKER_BUILDKIT=0 docker-compose up --build
+    ```
 
 ---
 
-## Requisitos
+## Accessing the Application
 
-- Go 1.20+ (recomendado 1.22).
-- Ferramentas de linha de comando:
-  - `curl` (para testes da API).
+Once the containers are running, you can access the different parts of the application:
 
----
+-   **Web Application (Login):**
+    [http://localhost:3001/login](http://localhost:3001/login)
 
-## Execução (Local)
+-   **Web Application (Tasks Page):**
+    [http://localhost:3001/tasks](http://localhost:3001/tasks)
+    *(Note: You must log in first to get a token).*
 
-1) Instale ou ajuste dependências de Go (caso falte `go.sum`):
+-   **API Health Check:**
+    [http://localhost:8080/health](http://localhost:8080/health)
 
-```bash
-go mod tidy
-```
-
-Se persistir erro de `go.sum` para SQLite:
-
-```bash
-go get github.com/mattn/go-sqlite3@latest
-```
-
-2) Rode a aplicação:
-
-```bash
-go run .
-```
-
-3) A API estará em:
+-   **API Documentation (Swagger):**
+    [http://localhost:8080/docs](http://localhost:8080/docs)
+    *(Strongly recommended for exploring and testing all available API endpoints).*
