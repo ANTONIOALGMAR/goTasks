@@ -1,0 +1,57 @@
+# render.yaml
+services:
+  # Backend Go Service
+  - type: web
+    name: gotasks-api
+    env: go
+    buildCommand: go mod download && go build -o server ./cmd/api
+    startCommand: ./server
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gotasks-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true # Render gerará um segredo seguro
+      - key: PORT
+        value: "8080" # Porta padrão do Next.js em produção (API Go)
+
+  # Frontend Next.js Service (como Web Service para SSR/ISR)
+  - type: web
+    name: gotasks-web
+    env: node
+    rootDir: web # O diretório onde está seu frontend Next.js
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: gotasks-api
+          property: host # O frontend precisará saber onde encontrar o backend
+      - key: HOST
+        value: "0.0.0.0" # Necessário para o Next.js no Render
+      - key: PORT
+        value: "3000" # Porta padrão do Next.js em produção
+
+  # PostgreSQL Database
+  - type: pserv
+    name: gotasks-db
+    plan: starter # Altere para 'standard' ou maior para produção
+    autoDeploy: false # Bancos de dados raramente precisam de auto-deploy
+  
+  # Adicionando um serviço de seed (worker) para executar o seed.go
+  - type: worker
+    name: gotasks-seed
+    env: go
+    buildCommand: go mod download && go build -o seed ./cmd/seed
+    startCommand: ./seed
+    autoDeploy: false # Geralmente você executa o seed manualmente ou uma vez
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gotasks-db
+          property: connectionString
+    # Importante: Este worker será executado manualmente ou uma vez. Não deve rodar em loop.
+    # Pode ser necessário configurar para rodar como um job único ou manualmente.
