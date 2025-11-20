@@ -63,7 +63,7 @@ export default function CreateTaskForm({
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Título</label>
           <input
-            className="w-full rounded-md border-slate-300 focus:ring-green-500 focus:border-green-500 bg-gray-50"
+            className="w-full rounded-md border-slate-300 focus:ring-green-500 focus:border-green-500 bg-gray-100"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -71,7 +71,7 @@ export default function CreateTaskForm({
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
           <select
-            className="w-full rounded-md border-slate-300 focus:ring-green-500 focus:border-green-500 bg-gray-50"
+            className="w-full rounded-md border-slate-300 focus:ring-green-500 focus:border-green-500 bg-gray-100"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
@@ -86,7 +86,7 @@ export default function CreateTaskForm({
         <label className="block text-sm font-medium text-slate-700 mb-1">Descrição</label>
         <textarea
           rows={4}
-          className="w-full rounded-md border-slate-300 focus:ring-green-500 focus:border-green-500 bg-gray-50"
+          className="w-full rounded-md border-slate-300 focus:ring-green-500 focus:border-green-500 bg-gray-100"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
@@ -97,7 +97,7 @@ export default function CreateTaskForm({
           <label className="block text-sm font-medium text-slate-700 mb-1">Prazo</label>
           <input
             type="date"
-            className="w-full rounded-md border-slate-300 focus:ring-green-500 focus:border-green-500 bg-gray-50"
+            className="w-full rounded-md border-slate-300 focus:ring-green-500 focus:border-green-500 bg-gray-100"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
           />

@@ -82,7 +82,7 @@ func (s *Scheduler) createUniqueNotification(userID, taskID uint, typ, msg strin
 	var count int64
 	cut := time.Now().Add(-dedupeWindow)
 	if err := s.db.Model(&models.Notification{}).
-		Where("user_id = ? AND task_id = ? AND type = ? AND read = ? AND created_at >= ?", userID, taskID, typ, false, cut).
+		Where("user_id = ? AND task_id = ? AND type = ? AND created_at >= ?", userID, taskID, typ, cut).
 		Count(&count).Error; err != nil {
 		return err
 	}

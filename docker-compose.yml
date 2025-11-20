@@ -9,6 +9,11 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck: # Adicionado healthcheck
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gotasks"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   api:
     build:
@@ -19,7 +24,8 @@ services:
       DATABASE_URL: postgres://postgres:postgres@db:5432/gotasks?sslmode=disable
       JWT_SECRET: dev-secret-change-me
     depends_on:
-      - db
+      db: # Modificado para esperar o db estar saudável
+        condition: service_healthy
     ports:
       - "8080:8080"
 
