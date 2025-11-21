@@ -16,8 +16,9 @@ export default function TaskModal(props: {
     aiSummary?: string;
     onClose: () => void;
     onSave?: (t: Partial<Task>) => void;
+    onGenerateAISummary?: (task: Task) => void; // Nova prop
 }) {
-    const { open, mode, task, aiSummary, onClose, onSave } = props;
+    const { open, mode, task, aiSummary, onClose, onSave, onGenerateAISummary } = props; // Desestruturar nova prop
     const isView = mode === 'view';
 
     const [editedTask, setEditedTask] = useState<Task>(
@@ -95,6 +96,18 @@ export default function TaskModal(props: {
                     <div className="mt-4 bg-gray-50 border rounded p-3">
                         <div className="text-sm font-medium text-gray-700">Resumo (IA)</div>
                         <p className="text-sm text-gray-600 mt-1">{aiSummary}</p>
+                    </div>
+                )}
+
+                {/* Adicionar botão para gerar resumo IA */}
+                {isView && onGenerateAISummary && task && (
+                    <div className="mt-4">
+                        <button
+                            onClick={() => onGenerateAISummary(task)}
+                            className="px-3 py-2 rounded bg-purple-600 text-white hover:bg-purple-700"
+                        >
+                            Gerar Resumo IA
+                        </button>
                     </div>
                 )}
 

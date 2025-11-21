@@ -263,6 +263,8 @@ function TasksClientComponent() {
         <Pagination page={page} size={size} hasNext={hasNext} onPrev={() => setPage(p => Math.max(1, p - 1))} onNext={() => setPage(p => p + 1)} />
         
         {modalOpen && selectedTask && (
+          // Adicionar log para depuração
+          console.log('TaskModal props - modalMode:', modalMode, 'selectedTask:', selectedTask),
           <TaskModal
             open={modalOpen}
             mode={modalMode}
@@ -272,6 +274,7 @@ function TasksClientComponent() {
               await saveTask(partialTask);
               setModalOpen(false);
             }}
+            onGenerateAISummary={runAISummary} // <-- Adicionar esta prop
           />
         )}
 
