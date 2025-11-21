@@ -3,9 +3,7 @@ services:
   # Backend Go Service
   - type: web
     name: gotasks-api
-    env: go
-    buildCommand: go mod download && go build -o server ./cmd/api/main.go
-    startCommand: ./server
+    dockerfilePath: ./Dockerfile.api
     autoDeploy: true
     envVars:
       - key: DATABASE_URL
