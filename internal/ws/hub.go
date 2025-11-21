@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"errors"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -96,6 +97,9 @@ func UpgradeWithAuth(secret string, hub *Hub) fiber.Handler {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "missing token"})
 		}
 		tok, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
+			if t.Method != jwt.SigningMethodHS256 {
+				return nil, errors.New("invalid signing method")
+			}
 			return []byte(secret), nil
 		})
 		if err != nil || !tok.Valid {

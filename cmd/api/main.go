@@ -59,25 +59,35 @@ func main() {
 	scheduler.Start()
 
 	api := app.Group("/api")
-	// Auth
+	// rotas públicas
 	api.Post("/auth/register", authHandler.Register)
 	api.Post("/auth/login", authHandler.Login)
 	api.Post("/auth/refresh", authHandler.Refresh)
 
-	// Tasks
-	api.Get("/tasks", auth.RequireJWT(cfg.JWTSecret), taskHandler.List)
-	api.Post("/tasks", auth.RequireJWT(cfg.JWTSecret), taskHandler.Create)
-	api.Get("/tasks/:id", auth.RequireJWT(cfg.JWTSecret), taskHandler.GetByID)
-	api.Patch("/tasks/:id", auth.RequireJWT(cfg.JWTSecret), taskHandler.Update)
-	api.Delete("/tasks/:id", auth.RequireJWT(cfg.JWTSecret), taskHandler.Delete)
+	// rotas protegidas (JWT)
+	// AI
+	// AI client e handler
+	var aiClient handlers.AIClient
+	if cfg.AIProvider == "openai" && cfg.OpenAIKey != "" {
+		aiClient = handlers.NewOpenAIClient(cfg.OpenAIKey, cfg.AIModel)
+	}
+	aiHandler := handlers.NewAIHandler(database, aiClient, cfg.AIModel, cfg.AILimitDaily)
 
-	// Comments
-	api.Get("/tasks/:id/comments", auth.RequireJWT(cfg.JWTSecret), commentHandler.ListByTask)
-	api.Post("/tasks/:id/comments", auth.RequireJWT(cfg.JWTSecret), commentHandler.CreateOnTask)
+	// grupo protegido
+	apiAuth := app.Group("/api", auth.RequireJWT(cfg.JWTSecret))
+	apiAuth.Post("/ai/tasks/:id/summary", aiHandler.SummarizeTask)
+	// poderia ter: /ai/tasks/:id/next-steps, /ai/chat
+	apiAuth.Get("/tasks", taskHandler.List)
+	apiAuth.Post("/tasks", taskHandler.Create)
+	apiAuth.Get("/tasks/:id", taskHandler.GetByID)
+	apiAuth.Patch("/tasks/:id", taskHandler.Update)
+	apiAuth.Delete("/tasks/:id", taskHandler.Delete)
 
-	// Notifications
-	api.Get("/notifications", auth.RequireJWT(cfg.JWTSecret), notificationsHandler.List)
-	api.Patch("/notifications/:id/read", auth.RequireJWT(cfg.JWTSecret), notificationsHandler.MarkRead)
+	apiAuth.Get("/tasks/:id/comments", commentHandler.ListByTask)
+	apiAuth.Post("/tasks/:id/comments", commentHandler.CreateOnTask)
+
+	apiAuth.Get("/notifications", notificationsHandler.List)
+	apiAuth.Patch("/notifications/:id/read", notificationsHandler.MarkRead)
 
 	// Swagger, WS etc.
 	log.Printf("API ouvindo em http://localhost:%s", cfg.Port)
