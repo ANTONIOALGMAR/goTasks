@@ -3,6 +3,7 @@ services:
   # Backend Go Service
   - type: web
     name: gotasks-api
+    env: docker
     dockerfilePath: ./Dockerfile.api
     autoDeploy: true
     envVars:
