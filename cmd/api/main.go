@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	log.Printf("DATABASE_URL from env: %s", os.Getenv("DATABASE_URL"))
+	log.Printf("DEBUG: FOO=[%s], DATABASE_URL=[%s]", os.Getenv("FOO"), os.Getenv("DATABASE_URL"))
 
 	cfg := config.Load()
 
