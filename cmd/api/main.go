@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -17,6 +18,8 @@ import (
 )
 
 func main() {
+	log.Printf("DATABASE_URL from env: %s", os.Getenv("DATABASE_URL"))
+
 	cfg := config.Load()
 
 	database, err := db.Connect(cfg.DatabaseURL)
